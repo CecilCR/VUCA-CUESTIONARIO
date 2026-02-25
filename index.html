@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario: Estrategia y desafíos en entornos organizacionales</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .question-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-header {
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 19px;
+            font-weight: 600;
+            color: #1e3c72;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            margin-bottom: 20px;
+        }
+
+        .option {
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: #667eea;
+            transform: translateX(5px);
+            background: #f0f4ff;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 12px;
+            margin-top: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .option label {
+            cursor: pointer;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            animation: pulseGreen 0.5s ease;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes pulseGreen {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.6;
+            animation: slideIn 0.4s ease;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            color: #721c24;
+        }
+
+        .feedback-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-text {
+            font-size: 16px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .btn.show {
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .results h2 {
+            color: #1e3c72;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            font-size: 56px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .results-message {
+            font-size: 18px;
+            color: #555;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Confetti Styles */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        #confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .question-text {
+                font-size: 17px;
+            }
+
+            .option {
+                padding: 14px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="confetti-container"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📊 Cuestionario general: Estrategia y desafíos en entornos organizacionales</h1>
+            <p>Gestión de las relaciones en las organizaciones</p>
+        </div>
+
+        <div class="content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <div id="quiz-container">
+                <!-- Las preguntas se generarán dinámicamente -->
+            </div>
+
+            <div class="results" id="results">
+                <div class="results-icon" id="resultsIcon"></div>
+                <h2>¡Cuestionario completado!</h2>
+                <div class="score-display" id="scoreDisplay"></div>
+                <div class="results-message" id="resultsMessage"></div>
+                <button class="reset-btn" onclick="resetQuiz()">Volver a intentar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                text: "Si bien los modelos de economía colaborativa (como el alquiler temporal) representaron inicialmente grandes ventajas de accesibilidad, ¿qué lección de gestión debe mantener alerta a un administrador hoy?",
+                options: [
+                    { id: 'a', text: 'Que los modelos disruptivos son perfectos y no requieren supervisión una vez instalados.' },
+                    { id: 'b', text: 'Que se debe estar alerta ante los defectos y abusos del sistema que pueden degradar la confianza y devolver al usuario a modelos convencionales.' },
+                    { id: 'c', text: 'Que la tecnología elimina automáticamente cualquier posibilidad de comportamiento abusivo por parte de los proveedores.' },
+                    { id: 'd', text: 'Que el éxito inicial de un modelo garantiza su sostenibilidad sin necesidad de ajustes regulatorios.' },
+                    { id: 'e', text: 'Que la única ventaja relevante es el precio, sin importar la calidad o seguridad del servicio.' }
+                ],
+                correctAnswer: 'b',
+                feedback: 'Los administradores deben evaluar constantemente los modelos; si el sistema permite abusos, el mercado volverá a lo seguro (Hoteles).'
+            },
+            {
+                id: 2,
+                text: "En un entorno organizacional complejo, ¿cuál es la relación esencial entre lograr el cumplimiento de objetivos claros y la capacidad de liderar?",
+                options: [
+                    { id: 'a', text: 'Basta con tener objetivos claros para que el equipo funcione de forma autónoma y aislada.' },
+                    { id: 'b', text: 'La capacidad de liderar con comunicación y transparencia es lo que permite que los objetivos claros se conviertan en acciones efectivas.' },
+                    { id: 'c', text: 'El líder debe ocultar las dificultades del entorno para no estresar al equipo con la complejidad.' },
+                    { id: 'd', text: 'La capacidad de liderar solo es necesaria en empresas con estructuras tradicionales, no en startups.' },
+                    { id: 'e', text: 'La transparencia es secundaria si los sistemas de control de rendimiento son lo suficientemente estrictos.' }
+                ],
+                correctAnswer: 'b',
+                feedback: 'No basta con metas; la capacidad de liderar con transparencia es el pegamento que une la estrategia con la ejecución en el caos.'
+            },
+            {
+                id: 3,
+                text: "La \"Economía Gig\" se basa en trabajos temporales facilitados por plataformas. ¿Cuál es la consecuencia más crítica de este modelo para el capital humano?",
+                options: [
+                    { id: 'a', text: 'La garantía de una carrera profesional estable y con beneficios ascendentes.' },
+                    { id: 'b', text: 'La inestabilidad para los trabajadores, caracterizada por ingresos variables y falta de seguridad social.' },
+                    { id: 'c', text: 'La obligación de pertenecer a una sola organización durante toda la vida laboral.' },
+                    { id: 'd', text: 'El aumento de la lealtad organizacional debido a la flexibilidad de los contratos.' },
+                    { id: 'e', text: 'La eliminación de la brecha digital gracias al uso intensivo de aplicaciones.' }
+                ],
+                correctAnswer: 'b',
+                feedback: 'La flexibilidad del modelo Gig tiene un costo alto: la inestabilidad y precariedad para el trabajador independiente.'
+            },
+            {
+                id: 4,
+                text: "El material menciona la caída histórica de NVIDIA en enero de 2025. ¿Qué lección administrativa extraemos de este evento sobre la \"Volatilidad\"?",
+                options: [
+                    { id: 'a', text: 'Que las empresas grandes son inmunes a los cambios bruscos de la tecnología.' },
+                    { id: 'b', text: 'Que el valor de mercado es estable y predecible a largo plazo.' },
+                    { id: 'c', text: 'Que cambios rápidos en el entorno (como nuevos competidores en IA) pueden destruir valor masivo en horas.' },
+                    { id: 'd', text: 'Que la bolsa de valores no afecta la estrategia operativa de una empresa tecnológica.' },
+                    { id: 'e', text: 'Que la mejor respuesta ante la volatilidad es dejar de invertir en innovación.' }
+                ],
+                correctAnswer: 'c',
+                feedback: 'La volatilidad de NVIDIA nos enseña que la escala no protege contra la velocidad de la innovación disruptiva.'
+            },
+            {
+                id: 5,
+                text: "A pesar de los inconvenientes y las diferencias culturales entre generaciones, ¿cómo ayuda el \"Mentoring Inverso\" a gestionar la complejidad organizacional?",
+                options: [
+                    { id: 'a', text: 'Reemplazando a los líderes antiguos por jóvenes con más energía para evitar conflictos.' },
+                    { id: 'b', text: 'Eliminando la necesidad de alfabetización digital mediante la delegación total en los más jóvenes.' },
+                    { id: 'c', text: 'Enfocándose en la transferencia mutua de tecnología y conocimiento estratégico para crear una cultura resiliente.' },
+                    { id: 'd', text: 'Reduciendo los costos de capacitación externa al obligar a los empleados a enseñarse entre sí sin guía.' },
+                    { id: 'e', text: 'Estandarizando el pensamiento de todos los empleados hacia una sola generación para evitar roces.' }
+                ],
+                correctAnswer: 'c',
+                feedback: 'Las diferencias culturales se superan cuando el foco es la transferencia de valor: tecnología desde los jóvenes y estrategia desde los experimentados.'
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        function initQuiz() {
+            renderQuestion();
+            updateProgress();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quiz-container');
+            const question = questions[currentQuestion];
+            
+            container.innerHTML = `
+                <div class="question-container active">
+                    <div class="question-header">
+                        <span class="question-number">Pregunta ${currentQuestion + 1} de ${questions.length}</span>
+                        <div class="question-text">${question.text}</div>
+                    </div>
+                    <div class="options" id="options-${question.id}">
+                        ${question.options.map(option => `
+                            <div class="option" id="option-${question.id}-${option.id}" onclick="selectOption(${question.id}, '${option.id}')">
+                                <input type="radio" id="q${question.id}-${option.id}" name="question-${question.id}" value="${option.id}">
+                                <label for="q${question.id}-${option.id}">${option.id}) ${option.text}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-${question.id}">
+                        <div class="feedback-title" id="feedback-title-${question.id}"></div>
+                        <div class="feedback-text" id="feedback-text-${question.id}"></div>
+                    </div>
+                    <button class="btn" id="next-btn" onclick="nextQuestion()">
+                        ${currentQuestion < questions.length - 1 ? 'Siguiente pregunta' : 'Ver resultados'} →
+                    </button>
+                </div>
+            `;
+            
+            answered = false;
+        }
+
+        function selectOption(questionId, optionId) {
+            if (answered) return;
+            
+            const question = questions.find(q => q.id === questionId);
+            const isCorrect = optionId === question.correctAnswer;
+            
+            answered = true;
+            
+            // Deshabilitar todas las opciones
+            const allOptions = document.querySelectorAll(`#options-${questionId} .option`);
+            allOptions.forEach(opt => {
+                opt.classList.add('disabled');
+                opt.onclick = null;
+                const input = opt.querySelector('input');
+                if (input) input.disabled = true;
+            });
+            
+            // Marcar respuesta seleccionada
+            const selectedOption = document.getElementById(`option-${questionId}-${optionId}`);
+            selectedOption.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            // Marcar respuesta correcta si el usuario falló
+            if (!isCorrect) {
+                const correctOption = document.getElementById(`option-${questionId}-${question.correctAnswer}`);
+                correctOption.classList.add('correct');
+            }
+            
+            // Mostrar feedback
+            const feedback = document.getElementById(`feedback-${questionId}`);
+            const feedbackTitle = document.getElementById(`feedback-title-${questionId}`);
+            const feedbackText = document.getElementById(`feedback-text-${questionId}`);
+            
+            feedback.classList.add('show');
+            feedback.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            if (isCorrect) {
+                feedbackTitle.innerHTML = '✓ ¡Correcto!';
+                feedbackText.textContent = question.feedback;
+                score++;
+                launchConfetti();
+            } else {
+                feedbackTitle.innerHTML = `✗ Incorrecto. La respuesta correcta es (${question.correctAnswer})`;
+                feedbackText.textContent = question.feedback;
+            }
+            
+            // Mostrar botón siguiente
+            document.getElementById('next-btn').classList.add('show');
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            updateProgress();
+            
+            if (currentQuestion < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('quiz-container').style.display = 'none';
+            const results = document.getElementById('results');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const resultsIcon = document.getElementById('resultsIcon');
+            const resultsMessage = document.getElementById('resultsMessage');
+            
+            results.classList.add('show');
+            scoreDisplay.textContent = `${score}/${questions.length}`;
+            
+            const percentage = (score / questions.length) * 100;
+            
+            if (percentage === 100) {
+                resultsIcon.textContent = '🏆';
+                resultsMessage.innerHTML = '<strong>¡Excelente dominio!</strong><br>Has demostrado una comprensión profunda de la estrategia y desafíos en entornos organizacionales. Tu capacidad para analizar situaciones complejas y aplicar conceptos de gestión es sobresaliente.';
+            } else if (percentage >= 80) {
+                resultsIcon.textContent = '🎯';
+                resultsMessage.innerHTML = '<strong>¡Muy buen desempeño!</strong><br>Tienes un sólido entendimiento de los conceptos clave. Revisa las preguntas que presentaron dificultad para fortalecer aún más tu comprensión de los entornos VUCA y la economía colaborativa.';
+            } else if (percentage >= 60) {
+                resultsIcon.textContent = '📚';
+                resultsMessage.innerHTML = '<strong>Conocimiento adecuado.</strong><br>Comprendes los conceptos básicos, pero hay áreas que requieren mayor profundización. Te recomendamos revisar el material sobre volatilidad, complejidad organizacional y los nuevos modelos de trabajo.';
+            } else {
+                resultsIcon.textContent = '💪';
+                resultsMessage.innerHTML = '<strong>Es momento de reforzar.</strong><br>Te sugerimos revisar detenidamente los conceptos de entornos VUCA, economía colaborativa y las nuevas dinámicas organizacionales. Considera volver a intentar el cuestionario después de repasar el material.';
+            }
+            
+            // Confetti final si obtuvo todas correctas
+            if (percentage === 100) {
+                setTimeout(() => launchConfetti(), 300);
+            }
+        }
+
+        function launchConfetti() {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#667eea', '#764ba2', '#f39c12', '#28a745', '#dc3545', '#17a2b8'];
+            const confettiCount = 50;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function resetQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('results').classList.remove('show');
+            
+            renderQuestion();
+            updateProgress();
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Inicializar el cuestionario cuando carga la página
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>
